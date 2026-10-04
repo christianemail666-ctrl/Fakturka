@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fakturka – faktury pro OSVČ</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f3a5f">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Fakturka">
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--tx:#1b2430;--mut:#6b7684;--pri:#1f3a5f;--priTx:#fff;--bd:#e1e6ed;--warn:#b26a00;--warnBg:#fff3dc;--bad:#b3261e;--badBg:#fde7e5;--ok:#1d7a46;--okBg:#e2f4ea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151c;--card:#19212b;--tx:#e8edf3;--mut:#9aa6b4;--pri:#7fa8dc;--priTx:#0b1522;--bd:#2a3542;--warn:#f0b45a;--warnBg:#3a2c12;--bad:#ff9a92;--badBg:#3d1c1a;--ok:#74d39b;--okBg:#12301f}}
+*{box-sizing:border-box}html{height:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-top:env(safe-area-inset-top,0px)}
+.wrap{max-width:560px;margin:0 auto;padding:14px 16px calc(150px + env(safe-area-inset-bottom,0px))}
+h1{font-size:22px;margin:2px 0 12px;color:var(--pri)}h2{margin:0 0 6px}
+input,select,textarea,button{font:inherit;color:inherit}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.li{display:flex;gap:10px;align-items:center;cursor:pointer}.grow{flex:1;min-width:0}.t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.m{font-size:13px;color:var(--mut)}.r{text-align:right;white-space:nowrap}
+.badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap}
+.b-ok{background:var(--okBg);color:var(--ok)}.b-warn{background:var(--warnBg);color:var(--warn)}.b-bad{background:var(--badBg);color:var(--bad)}
+label{display:block;font-size:13px;color:var(--mut);margin:11px 0 4px}
+.f{width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);cursor:pointer;font-weight:600}.btn.p{background:var(--pri);color:var(--priTx);border-color:var(--pri)}.btn.d{color:var(--bad)}.btn.s{padding:8px 12px;font-size:14px}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:4}
+.tab{flex:1;text-align:center;padding:10px 4px;font-size:12px;color:var(--mut);cursor:pointer}.tab.on{color:var(--pri);font-weight:700}.tab i{display:block;font-style:normal;font-size:22px}
+.fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:29px;border:0;background:var(--pri);color:var(--priTx);font-size:30px;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;z-index:4}
+.shade{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:5}.shade.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:94vh;overflow:auto;background:var(--card);border-radius:20px 20px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));z-index:6;display:none;max-width:560px;margin:0 auto}.sheet.on{display:block}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px}.kpi .card{margin:0}.kpi b{font-size:20px;display:block}
+.note{font-size:12px;color:var(--mut);margin-top:12px}.empty{text-align:center;color:var(--mut);padding:28px 10px}
+.line{border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:10px}
+.tot{text-align:right;margin-top:12px;font-size:15px}.tot b{font-size:19px}
+#invwrap{position:fixed;inset:0;background:#fff;color:#000;z-index:9;overflow:auto;display:none;padding:env(safe-area-inset-top,0px) 0 0}
+#invwrap.on{display:block}
+.bar{position:sticky;top:0;background:#1f3a5f;padding:10px;display:flex;gap:8px;justify-content:space-between}.bar .btn{background:#fff;color:#1f3a5f;border-color:#fff}
+.doc{max-width:760px;margin:0 auto;padding:22px 20px 40px;font-size:14px}.doc h3{margin:0;font-size:24px;color:#1f3a5f}
+.doc table{width:100%;border-collapse:collapse}.doc th{background:#1f3a5f;color:#fff;text-align:left;padding:6px 8px;font-size:12px}.doc td{padding:6px 8px;border-bottom:1px solid #ddd;vertical-align:top}.doc .n{text-align:right;white-space:nowrap}
+.doc .two{display:flex;gap:20px;margin:16px 0}.doc .two>div{flex:1;min-width:0}.doc .lab{font-size:11px;color:#667;text-transform:uppercase;letter-spacing:.05em}
+.doc .big{font-size:18px;font-weight:700;text-align:right;margin-top:14px}.doc .pay{background:#eef3f9;border-radius:8px;padding:10px 12px;margin-top:16px}
+@media print{body>*:not(#invwrap){display:none!important}#invwrap{position:static;display:block!important;overflow:visible}.bar{display:none}.doc{padding:0}@page{margin:14mm}}
+</style>
+</head>
+<body>
+<div class="wrap" id="main"></div>
+<button class="fab" id="fab" aria-label="Nová faktura">+</button>
+<nav class="tabs" id="tabs"></nav>
+<div class="shade" id="shade"></div><div class="sheet" id="sheet"></div>
+<div id="invwrap"></div>
+<script>
+/* ===== NASTAVENÍ (uprav před nasazením) ===== */
+var CONFIG={FREE_LIMIT:5,BUY_URL:"https://TVUJ-ODKAZ-NA-GUMROAD",WORKER_URL:""};
+var KEY="fakturka_v1";
+var S={set:{name:"",addr:"",ico:"",dic:"",vat:false,bank:"",iban:"",email:"",phone:"",reg:"Fyzická osoba zapsaná v živnostenském rejstříku",due:14,note:""},clients:[],invoices:[]};
+var tab="inv",cur=null,msgTxt="";
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function load(){try{var j=localStorage.getItem(KEY);if(j){var o=JSON.parse(j);S.set=Object.assign(S.set,o.set||{});S.clients=o.clients||[];S.invoices=o.invoices||[]}}catch(e){}}
+function store(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){msgTxt="Uložení se nepodařilo (plné úložiště?).";return false}}
+function licensed(){try{return localStorage.getItem("fakturka_lic")==="1"}catch(e){return false}}
+function money(n){return new Intl.NumberFormat("cs-CZ",{style:"currency",currency:"CZK"}).format(n||0)}
+function r2(n){return Math.round((n+Number.EPSILON)*100)/100}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function todayIso(){return iso(new Date())}
+function addDays(s,n){var p=s.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]+n);return iso(d)}
+function fmt(s){if(!s)return"";var p=s.split("-");return(+p[2])+". "+(+p[1])+". "+p[0]}
+function calc(inv){var base=0,vat=0,by={};(inv.lines||[]).forEach(function(l){var b=(+l.qty||0)*(+l.price||0),v=S.set.vat?b*(+l.vat||0)/100:0;base+=b;vat+=v;if(S.set.vat){by[l.vat]=by[l.vat]||{b:0,v:0};by[l.vat].b+=b;by[l.vat].v+=v}});return{base:r2(base),vat:r2(vat),total:r2(base+vat),by:by}}
+function status(inv){if(inv.paid)return{c:"b-ok",t:"zaplaceno"};if(inv.due<todayIso())return{c:"b-bad",t:"po splatnosti"};return{c:"b-warn",t:"čeká"}}
+function nextNum(){var y=String(new Date().getFullYear()),n=0;S.invoices.forEach(function(i){if(String(i.num).indexOf(y)===0){var k=parseInt(String(i.num).slice(4),10);if(k>n)n=k}});return y+String(n+1).padStart(4,"0")}
+function clientOf(id){return S.clients.filter(function(c){return c.id===id})[0]||{name:"(bez klienta)"}}
+/* ===== vykreslení ===== */
+function renderTabs(){var T=[["inv","🧾","Faktury"],["cli","👥","Klienti"],["sum","📊","Přehled"],["set","⚙️","Nastavení"]];$("tabs").innerHTML=T.map(function(t){return'<div class="tab'+(tab===t[0]?" on":"")+'" data-tab="'+t[0]+'"><i>'+t[1]+"</i>"+t[2]+"</div>"}).join("");$("fab").style.display=(tab==="inv"||tab==="cli")?"block":"none"}
+function render(){renderTabs();var h="";
+ if(tab==="inv"){h="<h1>Faktury</h1>";if(!S.set.name)h+='<div class="card" style="border-color:var(--warn)">Nejdřív vyplň <b>své údaje</b> v Nastavení, objeví se na každé faktuře.</div>';
+  var l=S.invoices.slice().sort(function(a,b){return a.num<b.num?1:-1});
+  h+=l.length?l.map(function(i){var s=status(i),t=calc(i);return'<div class="card li" data-inv="'+i.id+'"><div class="grow"><div class="t">'+esc(i.num)+" · "+esc(clientOf(i.client).name)+'</div><div class="m">splatnost '+fmt(i.due)+'</div></div><div class="r"><b>'+money(t.total)+'</b><br><span class="badge '+s.c+'">'+s.t+"</span></div></div>"}).join(""):'<div class="empty">Zatím žádné faktury.<br>Klepni na + a vystav první.</div>'}
+ if(tab==="cli"){h="<h1>Klienti</h1>";h+=S.clients.length?S.clients.map(function(c){return'<div class="card li" data-cli="'+c.id+'"><div class="grow"><div class="t">'+esc(c.name)+'</div><div class="m">'+(c.ico?"IČO "+esc(c.ico):"")+" "+esc(c.email||"")+"</div></div></div>"}).join(""):'<div class="empty">Zatím žádní klienti.<br>Přidej je tlačítkem +.</div>'}
+ if(tab==="sum"){var y=String(new Date().getFullYear()),inY=S.invoices.filter(function(i){return i.issued.indexOf(y)===0});var tot=0,paid=0,open=0,over=0;inY.forEach(function(i){var t=calc(i).total;tot+=t;if(i.paid)paid+=t;else{open+=t;if(i.due<todayIso())over+=t}});
+  h='<h1>Přehled '+y+'</h1><div class="kpi"><div class="card"><span class="m">Vystaveno</span><b>'+money(tot)+'</b></div><div class="card"><span class="m">Zaplaceno</span><b>'+money(paid)+'</b></div><div class="card"><span class="m">Čeká na úhradu</span><b>'+money(open)+'</b></div><div class="card"><span class="m">Po splatnosti</span><b style="color:var(--bad)">'+money(over)+"</b></div></div>"+
+  '<div class="card" style="margin-top:14px"><b>Export pro účetní</b><div class="m">Všechny faktury do tabulky (CSV) nebo záloha všech dat.</div><div class="row" style="margin-top:10px"><button class="btn" data-act="csv">Export CSV</button><button class="btn" data-act="backup">Záloha (JSON)</button></div><div class="row" style="margin-top:10px"><button class="btn" data-act="restore">Obnovit ze zálohy</button></div><input type="file" id="fRes" accept=".json,application/json" hidden></div><div class="note">Pozor: data jsou jen v tomto zařízení. Zálohuj pravidelně. Faktury je zákonná povinnost uchovávat po stanovenou dobu (délku ověř u účetní).</div>'}
+ if(tab==="set"){var s=S.set;h='<h1>Nastavení</h1><div class="card"><b>Moje údaje (dodavatel)</b><label>Jméno nebo obchodní jméno</label><input class="f" data-s="name" value="'+esc(s.name)+'"><label>Adresa</label><textarea class="f" rows="2" data-s="addr">'+esc(s.addr)+'</textarea><div class="row"><div><label>IČO</label><input class="f" data-s="ico" value="'+esc(s.ico)+'" inputmode="numeric"></div><div><label>DIČ</label><input class="f" data-s="dic" value="'+esc(s.dic)+'"></div></div><label><input type="checkbox" data-s="vat"'+(s.vat?" checked":"")+'> Jsem plátce DPH</label><label>Číslo účtu</label><input class="f" data-s="bank" value="'+esc(s.bank)+'" placeholder="123456789/0100"><label>IBAN (nepovinný)</label><input class="f" data-s="iban" value="'+esc(s.iban)+'"><div class="row"><div><label>E-mail</label><input class="f" data-s="email" value="'+esc(s.email)+'"></div><div><label>Telefon</label><input class="f" data-s="phone" value="'+esc(s.phone)+'"></div></div><label>Zápis v rejstříku (text na faktuře)</label><input class="f" data-s="reg" value="'+esc(s.reg)+'"><label>Výchozí splatnost (dní)</label><input class="f" type="number" data-s="due" value="'+esc(s.due)+'"><label>Text v patičce faktury</label><textarea class="f" rows="2" data-s="note">'+esc(s.note)+'</textarea></div><div class="card"><b>Licence</b><div class="m">'+(licensed()?"Neomezená verze je aktivní. Děkujeme!":"Zdarma do "+CONFIG.FREE_LIMIT+" faktur. Neomezená verze po jednorázové platbě.")+'</div>'+(licensed()?"":'<button class="btn p" style="margin-top:10px" data-act="paywall">Odemknout neomezenou verzi</button>')+"</div>"}
+ h+='<div class="note" id="msg">'+esc(msgTxt)+"</div>";$("main").innerHTML=h}
+/* ===== okna ===== */
+function open(h){$("sheet").innerHTML=h;$("sheet").classList.add("on");$("shade").classList.add("on")}
+function closeS(){$("sheet").classList.remove("on");$("shade").classList.remove("on");cur=null}
+function clientForm(id){var c=S.clients.filter(function(x){return x.id===id})[0]||{id:"c"+Date.now(),name:"",addr:"",ico:"",dic:"",email:""};cur={k:"cli",o:JSON.parse(JSON.stringify(c)),isNew:!S.clients.some(function(x){return x.id===c.id})};
+ open('<h2>'+(cur.isNew?"Nový klient":"Klient")+'</h2><label>Název / jméno</label><input class="f" data-c="name" value="'+esc(c.name)+'"><label>Adresa</label><textarea class="f" rows="2" data-c="addr">'+esc(c.addr)+'</textarea><div class="row"><div><label>IČO</label><input class="f" data-c="ico" value="'+esc(c.ico)+'"></div><div><label>DIČ</label><input class="f" data-c="dic" value="'+esc(c.dic)+'"></div></div><label>E-mail</label><input class="f" data-c="email" value="'+esc(c.email)+'"><div class="row" style="margin-top:16px">'+(cur.isNew?"":'<button class="btn d" data-act="delCli">Smazat</button>')+'<button class="btn" data-act="close">Zrušit</button><button class="btn p" data-act="saveCli">Uložit</button></div>')}
+function invForm(id,dup){var o=S.invoices.filter(function(x){return x.id===id})[0],inv;
+ if(o&&!dup)inv=JSON.parse(JSON.stringify(o));else{var t=todayIso();inv={id:"i"+Date.now(),num:nextNum(),client:o?o.client:(S.clients[0]||{}).id||"",issued:t,duzp:t,due:addDays(t,+S.set.due||14),pay:"převodem",vs:"",lines:o?JSON.parse(JSON.stringify(o.lines)):[{desc:"",qty:1,unit:"ks",price:0,vat:21}],note:"",paid:false,paidDate:""}}
+ cur={k:"inv",o:inv,isNew:!o||!!dup};invSheet()}
+function invSheet(){var inv=cur.o,cl=S.clients.map(function(c){return'<option value="'+c.id+'"'+(c.id===inv.client?" selected":"")+">"+esc(c.name)+"</option>"}).join("");
+ var ln=inv.lines.map(function(l,i){return'<div class="line"><input class="f" placeholder="Popis položky" data-l="'+i+'" data-f="desc" value="'+esc(l.desc)+'"><div class="row" style="margin-top:8px"><input class="f" type="number" step="any" placeholder="Množství" data-l="'+i+'" data-f="qty" value="'+esc(l.qty)+'"><input class="f" placeholder="Jedn." data-l="'+i+'" data-f="unit" value="'+esc(l.unit)+'"><input class="f" type="number" step="any" placeholder="Cena/jedn." data-l="'+i+'" data-f="price" value="'+esc(l.price)+'"></div>'+(S.set.vat?'<div class="row" style="margin-top:8px"><select class="f" data-l="'+i+'" data-f="vat">'+[0,12,21].map(function(v){return'<option value="'+v+'"'+(+l.vat===v?" selected":"")+">DPH "+v+" %</option>"}).join("")+"</select><div></div></div>":"")+(inv.lines.length>1?'<button class="btn s d" style="margin-top:8px" data-act="delLine" data-i="'+i+'">Odebrat položku</button>':"")+"</div>"}).join("");
+ open('<h2>'+(cur.isNew?"Nová faktura":"Faktura "+esc(inv.num))+'</h2><div class="row"><div><label>Číslo faktury</label><input class="f" data-i="num" value="'+esc(inv.num)+'"></div><div><label>Způsob úhrady</label><input class="f" data-i="pay" value="'+esc(inv.pay)+'"></div></div><label>Klient</label><select class="f" data-i="client">'+(cl||'<option value="">— nejdřív přidej klienta —</option>')+'</select><div class="row"><div><label>Vystaveno</label><input class="f" type="date" data-i="issued" value="'+inv.issued+'"></div><div><label>Splatnost</label><input class="f" type="date" data-i="due" value="'+inv.due+'"></div></div>'+(S.set.vat?'<label>Datum zdan. plnění (DUZP)</label><input class="f" type="date" data-i="duzp" value="'+inv.duzp+'">':"")+'<div id="lines">'+ln+'</div><button class="btn s" style="margin-top:10px" data-act="addLine">+ Přidat položku</button><label>Poznámka na faktuře</label><textarea class="f" rows="2" data-i="note">'+esc(inv.note)+'</textarea><div class="tot" id="tot"></div><div class="row" style="margin-top:16px">'+(cur.isNew?"":'<button class="btn d" data-act="delInv">Smazat</button>')+'<button class="btn" data-act="close">Zrušit</button><button class="btn p" data-act="saveInv">Uložit</button></div>');totals()}
+function totals(){var t=calc(cur.o);$("tot").innerHTML=(S.set.vat?"Základ "+money(t.base)+" · DPH "+money(t.vat)+"<br>":"")+"Celkem <b>"+money(t.total)+"</b>"}
+function preview(id){var inv=S.invoices.filter(function(x){return x.id===id})[0];if(!inv)return;var c=clientOf(inv.client),s=S.set,t=calc(inv),vs=inv.vs||String(inv.num).replace(/\D/g,"");
+ var rows=inv.lines.map(function(l){var b=(+l.qty||0)*(+l.price||0);return"<tr><td>"+esc(l.desc)+'</td><td class="n">'+esc(l.qty)+" "+esc(l.unit)+'</td><td class="n">'+money(+l.price)+"</td>"+(s.vat?'<td class="n">'+(+l.vat)+" %</td>":"")+'<td class="n">'+money(r2(b))+"</td></tr>"}).join("");
+ var vatTbl="";if(s.vat){vatTbl='<table style="margin-top:12px;width:60%;margin-left:auto"><tr><th>Sazba</th><th class="n">Základ</th><th class="n">DPH</th></tr>'+Object.keys(t.by).map(function(k){return"<tr><td>"+k+' %</td><td class="n">'+money(r2(t.by[k].b))+'</td><td class="n">'+money(r2(t.by[k].v))+"</td></tr>"}).join("")+"</table>"}
+ $("invwrap").innerHTML='<div class="bar"><button class="btn" data-act="pClose">← Zpět</button><button class="btn" data-act="pPrint">Tisk / uložit jako PDF</button></div><div class="doc"><div style="display:flex;justify-content:space-between;align-items:flex-start"><h3>'+(s.vat?"Faktura – daňový doklad":"Faktura")+'</h3><div class="n" style="text-align:right"><div class="lab">Číslo</div><b style="font-size:18px">'+esc(inv.num)+'</b></div></div><div class="two"><div><div class="lab">Dodavatel</div><b>'+esc(s.name)+"</b><br>"+esc(s.addr).replace(/\n/g,"<br>")+"<br>IČO: "+esc(s.ico)+(s.vat&&s.dic?"<br>DIČ: "+esc(s.dic):"")+(s.vat?"":"<br>Nejsem plátce DPH.")+"<br><small>"+esc(s.reg)+'</small></div><div><div class="lab">Odběratel</div><b>'+esc(c.name)+"</b><br>"+esc(c.addr||"").replace(/\n/g,"<br>")+(c.ico?"<br>IČO: "+esc(c.ico):"")+(c.dic?"<br>DIČ: "+esc(c.dic):"")+'</div></div><div class="two"><div><div class="lab">Datum vystavení</div>'+fmt(inv.issued)+"</div>"+(s.vat?'<div><div class="lab">DUZP</div>'+fmt(inv.duzp)+"</div>":"")+'<div><div class="lab">Splatnost</div><b>'+fmt(inv.due)+'</b></div><div><div class="lab">Způsob úhrady</div>'+esc(inv.pay)+'</div></div><table><tr><th>Popis</th><th class="n">Množství</th><th class="n">Cena/jedn.</th>'+(s.vat?'<th class="n">DPH</th>':"")+'<th class="n">Celkem</th></tr>'+rows+"</table>"+vatTbl+'<div class="big">K úhradě: '+money(t.total)+'</div><div class="pay"><b>Platební údaje</b><br>Účet: '+esc(s.bank)+(s.iban?"<br>IBAN: "+esc(s.iban):"")+"<br>Variabilní symbol: "+esc(vs)+"</div>"+(inv.note?'<p style="margin-top:14px">'+esc(inv.note).replace(/\n/g,"<br>")+"</p>":"")+(s.note?'<p style="margin-top:14px;font-size:12px;color:#445">'+esc(s.note).replace(/\n/g,"<br>")+"</p>":"")+'<div style="margin-top:20px;font-size:12px;color:#556">Vystavil: '+esc(s.name)+(s.email?" · "+esc(s.email):"")+(s.phone?" · "+esc(s.phone):"")+"</div></div>";
+ $("invwrap").classList.add("on");$("invwrap").dataset.id=id}
+function detail(id){var inv=S.invoices.filter(function(x){return x.id===id})[0];if(!inv)return;var s=status(inv),t=calc(inv);
+ open('<h2>'+esc(inv.num)+'</h2><div class="m">'+esc(clientOf(inv.client).name)+'</div><div style="margin:12px 0"><b style="font-size:22px">'+money(t.total)+'</b> <span class="badge '+s.c+'">'+s.t+'</span></div><div class="m">Vystaveno '+fmt(inv.issued)+" · splatnost "+fmt(inv.due)+(inv.paid?" · zaplaceno "+fmt(inv.paidDate):"")+'</div><div class="row" style="margin-top:16px"><button class="btn p" data-act="pv" data-id="'+id+'">Zobrazit / PDF</button><button class="btn" data-act="togglePaid" data-id="'+id+'">'+(inv.paid?"Označit jako nezaplacenou":"Označit jako zaplacenou")+'</button></div><div class="row" style="margin-top:10px"><button class="btn" data-act="edit" data-id="'+id+'">Upravit</button><button class="btn" data-act="dup" data-id="'+id+'">Kopírovat</button><button class="btn" data-act="close">Zavřít</button></div>')}
+/* ===== licence ===== */
+function paywall(){open('<h2>Odemkni Fakturku</h2><p>Zdarma můžeš vystavit '+CONFIG.FREE_LIMIT+' faktur. Neomezenou verzi odemkneš jednorázovou platbou, žádné předplatné. Po koupi dostaneš licenční klíč.</p><a class="btn p" style="display:block;text-align:center;text-decoration:none" href="'+esc(CONFIG.BUY_URL)+'" target="_blank" rel="noopener">Koupit licenci</a><label>Už máš klíč? Vlož ho sem</label><input class="f" id="lk" autocomplete="off"><div class="row" style="margin-top:14px"><button class="btn" data-act="close">Zavřít</button><button class="btn p" data-act="activate">Aktivovat</button></div><div class="m" id="pm" style="margin-top:10px"></div>')}
+async function activate(){var k=$("lk").value.trim(),pm=$("pm");if(!k){pm.textContent="Vlož licenční klíč.";return}if(!CONFIG.WORKER_URL){pm.textContent="Ověřování není nastaveno (viz README).";return}pm.textContent="Ověřuji…";
+ try{var r=await fetch(CONFIG.WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:k})}),j=await r.json();if(j.ok){try{localStorage.setItem("fakturka_lic","1")}catch(e){}pm.textContent="Hotovo, odemčeno. Děkujeme!";setTimeout(function(){closeS();render()},900)}else pm.textContent="Klíč je neplatný nebo vrácený."}catch(e){pm.textContent="Ověření vyžaduje internet. Zkus to znovu online."}}
+/* ===== export ===== */
+function dl(name,type,text){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function csv(){var q=function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"'};var rows=[["Číslo","Klient","IČO klienta","Vystaveno","DUZP","Splatnost","Základ","DPH","Celkem","Stav","Zaplaceno dne"]];S.invoices.forEach(function(i){var t=calc(i),c=clientOf(i.client);rows.push([i.num,c.name,c.ico||"",i.issued,i.duzp||i.issued,i.due,t.base,t.vat,t.total,i.paid?"zaplaceno":"nezaplaceno",i.paidDate||""])});dl("faktury.csv","text/csv;charset=utf-8","\ufeff"+rows.map(function(r){return r.map(q).join(";")}).join("\n"))}
+/* ===== události ===== */
+document.addEventListener("click",function(e){var t=e.target,a=t.dataset&&t.dataset.act,tb=t.closest&&t.closest("[data-tab]");
+ if(tb){tab=tb.dataset.tab;msgTxt="";render();return}
+ var ci=t.closest&&t.closest("[data-inv]");if(ci&&!a){detail(ci.dataset.inv);return}
+ var cc=t.closest&&t.closest("[data-cli]");if(cc&&!a){clientForm(cc.dataset.cli);return}
+ if(t.id==="fab"){if(tab==="cli")clientForm();else{if(!S.clients.length){tab="cli";render();clientForm();return}if(!licensed()&&S.invoices.length>=CONFIG.FREE_LIMIT){paywall();return}invForm()}return}
+ if(t.id==="shade"){closeS();return}
+ if(!a)return;var id=t.dataset.id;
+ switch(a){case"close":closeS();break;case"paywall":paywall();break;case"activate":activate();break;
+  case"saveCli":if(!cur.o.name.trim()){return}if(cur.isNew)S.clients.push(cur.o);else S.clients=S.clients.map(function(c){return c.id===cur.o.id?cur.o:c});store();closeS();render();break;
+  case"delCli":if(S.invoices.some(function(i){return i.client===cur.o.id})){alert("Klient má faktury, nelze ho smazat.");return}if(confirm("Smazat klienta?")){S.clients=S.clients.filter(function(c){return c.id!==cur.o.id});store();closeS();render()}break;
+  case"addLine":cur.o.lines.push({desc:"",qty:1,unit:"ks",price:0,vat:21});invSheet();break;
+  case"delLine":cur.o.lines.splice(+t.dataset.i,1);invSheet();break;
+  case"saveInv":if(!cur.o.client){alert("Vyber klienta.");return}if(!cur.o.lines.some(function(l){return l.desc.trim()})){alert("Doplň aspoň jednu položku.");return}
+   if(cur.isNew&&!licensed()&&S.invoices.length>=CONFIG.FREE_LIMIT){paywall();return}
+   if(S.invoices.some(function(i){return i.num===cur.o.num&&i.id!==cur.o.id})&&!confirm("Toto číslo faktury už existuje. Uložit i tak?"))return;
+   if(cur.isNew)S.invoices.push(cur.o);else S.invoices=S.invoices.map(function(i){return i.id===cur.o.id?cur.o:i});store();var nid=cur.o.id;closeS();render();detail(nid);break;
+  case"delInv":if(confirm("Opravdu smazat fakturu? Čísla faktur by měla na sebe navazovat.")){S.invoices=S.invoices.filter(function(i){return i.id!==cur.o.id});store();closeS();render()}break;
+  case"pv":closeS();preview(id);break;case"pClose":$("invwrap").classList.remove("on");break;case"pPrint":window.print();break;
+  case"togglePaid":S.invoices.forEach(function(i){if(i.id===id){i.paid=!i.paid;i.paidDate=i.paid?todayIso():""}});store();closeS();render();break;
+  case"edit":closeS();invForm(id);break;case"dup":closeS();if(!licensed()&&S.invoices.length>=CONFIG.FREE_LIMIT){paywall();return}invForm(id,true);break;
+  case"csv":csv();break;case"backup":dl("fakturka-zaloha.json","application/json",JSON.stringify(S));msgTxt="Záloha stažena.";render();break;
+  case"restore":$("fRes").click();break}});
+document.addEventListener("input",function(e){var t=e.target,d=t.dataset||{};
+ if(d.s){S.set[d.s]=t.type==="checkbox"?t.checked:t.value;if(d.s==="due")S.set.due=+t.value;store();if(d.s==="vat")render();return}
+ if(d.c&&cur){cur.o[d.c]=t.value;return}
+ if(d.i&&cur){cur.o[d.i]=t.value;return}
+ if(d.l!==undefined&&cur){var l=cur.o.lines[+d.l];l[d.f]=(d.f==="desc"||d.f==="unit")?t.value:(t.value===""?"":+t.value);totals()}});
+document.addEventListener("change",function(e){var t=e.target;
+ if(t.dataset&&t.dataset.s==="vat"){S.set.vat=t.checked;store();render()}
+ if(t.id==="fRes"&&t.files[0]){t.files[0].text().then(function(x){try{var o=JSON.parse(x);S.set=Object.assign(S.set,o.set||{});S.clients=o.clients||[];S.invoices=o.invoices||[];store();msgTxt="Data obnovena.";render()}catch(err){msgTxt="Soubor se nepodařilo načíst.";render()}});t.value=""}});
+load();render();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+</script>
+</body>
+</html>
