@@ -51,7 +51,7 @@ label{display:block;font-size:13px;color:var(--mut);margin:11px 0 4px}
 <div id="invwrap"></div>
 <script>
 /* ===== NASTAVENÍ (uprav před nasazením) ===== */
-var CONFIG={FREE_LIMIT:5,BUY_URL:"https://TVUJ-ODKAZ-NA-GUMROAD",WORKER_URL:""};
+var CONFIG={FREE_LIMIT:5,BUY_URL:"https://TVUJ-ODKAZ-NA-GUMROAD",WORKER_URL:"",OWNER_HASH:"421409215ac2ed59082daeec30e9de89a0e6dba4a4d7c707dd546a48f2860c84"};
 var KEY="fakturka_v1";
 var S={set:{name:"",addr:"",ico:"",dic:"",vat:false,bank:"",iban:"",email:"",phone:"",reg:"Fyzická osoba zapsaná v živnostenském rejstříku",due:14,note:""},clients:[],invoices:[]};
 var tab="inv",cur=null,msgTxt="";
@@ -103,7 +103,9 @@ function detail(id){var inv=S.invoices.filter(function(x){return x.id===id})[0];
  open('<h2>'+esc(inv.num)+'</h2><div class="m">'+esc(clientOf(inv.client).name)+'</div><div style="margin:12px 0"><b style="font-size:22px">'+money(t.total)+'</b> <span class="badge '+s.c+'">'+s.t+'</span></div><div class="m">Vystaveno '+fmt(inv.issued)+" · splatnost "+fmt(inv.due)+(inv.paid?" · zaplaceno "+fmt(inv.paidDate):"")+'</div><div class="row" style="margin-top:16px"><button class="btn p" data-act="pv" data-id="'+id+'">Zobrazit / PDF</button><button class="btn" data-act="togglePaid" data-id="'+id+'">'+(inv.paid?"Označit jako nezaplacenou":"Označit jako zaplacenou")+'</button></div><div class="row" style="margin-top:10px"><button class="btn" data-act="edit" data-id="'+id+'">Upravit</button><button class="btn" data-act="dup" data-id="'+id+'">Kopírovat</button><button class="btn" data-act="close">Zavřít</button></div>')}
 /* ===== licence ===== */
 function paywall(){open('<h2>Odemkni Fakturku</h2><p>Zdarma můžeš vystavit '+CONFIG.FREE_LIMIT+' faktur. Neomezenou verzi odemkneš jednorázovou platbou, žádné předplatné. Po koupi dostaneš licenční klíč.</p><a class="btn p" style="display:block;text-align:center;text-decoration:none" href="'+esc(CONFIG.BUY_URL)+'" target="_blank" rel="noopener">Koupit licenci</a><label>Už máš klíč? Vlož ho sem</label><input class="f" id="lk" autocomplete="off"><div class="row" style="margin-top:14px"><button class="btn" data-act="close">Zavřít</button><button class="btn p" data-act="activate">Aktivovat</button></div><div class="m" id="pm" style="margin-top:10px"></div>')}
-async function activate(){var k=$("lk").value.trim(),pm=$("pm");if(!k){pm.textContent="Vlož licenční klíč.";return}if(!CONFIG.WORKER_URL){pm.textContent="Ověřování není nastaveno (viz README).";return}pm.textContent="Ověřuji…";
+async function sha256(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+async function activate(){var k=$("lk").value.trim(),pm=$("pm");if(!k){pm.textContent="Vlož licenční klíč.";return}
+ try{if(CONFIG.OWNER_HASH&&await sha256(k)===CONFIG.OWNER_HASH){try{localStorage.setItem("fakturka_lic","1")}catch(e){}pm.textContent="Odemčeno.";setTimeout(function(){closeS();render()},700);return}}catch(e){}if(!CONFIG.WORKER_URL){pm.textContent="Ověřování není nastaveno (viz README).";return}pm.textContent="Ověřuji…";
  try{var r=await fetch(CONFIG.WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:k})}),j=await r.json();if(j.ok){try{localStorage.setItem("fakturka_lic","1")}catch(e){}pm.textContent="Hotovo, odemčeno. Děkujeme!";setTimeout(function(){closeS();render()},900)}else pm.textContent="Klíč je neplatný nebo vrácený."}catch(e){pm.textContent="Ověření vyžaduje internet. Zkus to znovu online."}}
 /* ===== export ===== */
 function dl(name,type,text){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
