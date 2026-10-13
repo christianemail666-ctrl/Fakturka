@@ -1,6 +1,6 @@
 // Service worker: uloží aplikaci do telefonu, aby fungovala bez internetu.
 // Při každé úpravě souborů změň číslo verze, ať se stará verze nahradí.
-const VERSION = "fakturka-v1";
+const VERSION = "fakturka-v2";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", (e) => {
